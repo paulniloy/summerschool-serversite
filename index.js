@@ -42,9 +42,13 @@ async function run() {
 
     app.post('/instructors', async(req,res)=>{
         const user = req.body;
+        const query = {email : user.email};
+        const existing = await instructorsdata.findOne(query);
+        if(existing){
+            return res.send({message : "already existed user"})
+        }
         const result = await instructorsdata.insertOne(user);
         res.send(result)
-        console.log(body);
     })
 
     app.get('/popclasses', async(req, res)=>{
