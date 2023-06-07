@@ -37,9 +37,22 @@ async function run() {
 
     const db = client.db("summerschool");
     const classes = db.collection("popularclasses");
+    const instructors = db.collection("popularinstructors");
+    const instructorsdata = db.collection("instructors");
+
+    app.post('/instructors', async(req,res)=>{
+        const user = req.body;
+        const result = await instructorsdata.insertOne(user);
+        res.send(result)
+        console.log(body);
+    })
 
     app.get('/popclasses', async(req, res)=>{
-        const result = await classes.find().toArray();
+        const result = await classes.find({students : {$gte : "50"}}).toArray();
+        res.send(result)
+    })
+    app.get('/popinstructors', async(req, res)=>{
+        const result = await instructors.find().toArray();
         res.send(result)
     })
 
