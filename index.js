@@ -18,7 +18,7 @@ console.log(process.env.user_name);
 
 
 
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const uri = `mongodb+srv://${process.env.user_name}:${process.env.password}@paulniloy.38wqfao.mongodb.net/?retryWrites=true&w=majority`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
@@ -39,7 +39,7 @@ async function run() {
     const classes = db.collection("popularclasses");
     const instructors = db.collection("popularinstructors");
     const instructorsdata = db.collection("instructors");
-
+// instructors page
     app.post('/instructors', async(req,res)=>{
         const user = req.body;
         const query = {email : user.email};
@@ -50,7 +50,47 @@ async function run() {
         const result = await instructorsdata.insertOne(user);
         res.send(result)
     })
+    app.get('/instructors', async(req,res)=>{
+        const result = await instructorsdata.find().toArray();
+        res.send(result)
+    })
 
+    // manage by admin
+
+    app.patch("/instructors/makeadmin/:id" , async(req,res)=>{
+        const id = req.params.id
+        const filter = { _id: new ObjectId(id) };
+        const updateDoc = {
+            $set: {
+              role: "admin"
+            },
+          };
+        const result = instructorsdata.updateOne(filter, updateDoc);
+        res.send(result)
+    })
+    app.patch("/instructors/makeinstructor/:id" , async(req,res)=>{
+        const id = req.params.id
+        const filter = { _id: new ObjectId(id) };
+        const updateDoc = {
+            $set: {
+              roleB: "instructor"
+            },
+          };
+        const result = instructorsdata.updateOne(filter, updateDoc);
+        res.send(result)
+    })
+
+    app.delete("/users/delete/:id", async(req,res)=>{
+        const id = req.params.id;
+        console.log(id);
+        const query = { _id : new ObjectId(id) };
+        const result = await instructorsdata.deleteOne(query);
+        res.send(result)
+    })
+
+
+
+// popular classes section
     app.get('/popclasses', async(req, res)=>{
         const result = await classes.find({students : {$gte : "50"}}).toArray();
         res.send(result)
