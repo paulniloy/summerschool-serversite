@@ -100,7 +100,9 @@ async function run() {
 
 // popular classes section
     app.get('/popclasses', async(req, res)=>{
-        const result = await classes.find({"students" : {$gte : "60"}}).toArray();
+        const query = {status : "approved"};
+        const options = {sort: { "students": -1 }}
+        const result = await classes.find(query, options,{"students" : {$gte : "60"}}).toArray();
         res.send(result)
     })
     app.get('/popinstructors', async(req, res)=>{
@@ -134,6 +136,12 @@ async function run() {
     app.get('/getpending', async(req,res)=>{
         const result = await pending.find().toArray();
         res.send(result) 
+    })
+    app.delete('/deletepending/:id', async(req,res)=>{
+        const userid = req.params.id;
+        const query = {_id : new ObjectId(userid)}
+        const result = await pending.deleteOne(query);
+        res.send(result)
     })
 
     // add pending to database
