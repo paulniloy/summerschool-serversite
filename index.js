@@ -3,6 +3,7 @@ require('dotenv').config()
 const app = express()
 const port = 3000
 var cors = require('cors')
+var jwt = require('jsonwebtoken');
 
 // 2j7FKakybpweZpVG
 // niloypaul
@@ -15,6 +16,9 @@ app.use(express.json());
 // niloypaul
 console.log(process.env.password);
 console.log(process.env.user_name);
+console.log(process.env.token);
+
+
 
 
 
@@ -98,6 +102,13 @@ async function run() {
     app.get('/popinstructors', async(req, res)=>{
         const result = await instructors.find().toArray();
         res.send(result)
+    })
+
+    // jwt token
+    app.post('/jwt', (req,res)=>{
+        const user = req.body;
+        const token = jwt.sign(user, process.env.token, { expiresIn: '1h' });
+        res.send(token)
     })
 
 
