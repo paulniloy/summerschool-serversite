@@ -108,7 +108,16 @@ async function run() {
     app.post('/jwt', (req,res)=>{
         const user = req.body;
         const token = jwt.sign(user, process.env.token, { expiresIn: '1h' });
-        res.send(token)
+        res.send({token})
+    })
+
+    //fetch instructors by roleB
+
+    app.get('/instructorpage', async(req,res)=>{
+        const query = {roleB : "instructor"};
+        const result = await instructorsdata.find(query).toArray();
+        res.send(result)
+
     })
 
 
