@@ -43,6 +43,10 @@ async function run() {
     const classes = db.collection("popularclasses");
     const instructors = db.collection("popularinstructors");
     const instructorsdata = db.collection("instructors");
+    const pending = db.collection("pending");
+
+
+
 // instructors page
     app.post('/instructors', async(req,res)=>{
         const user = req.body;
@@ -120,7 +124,17 @@ async function run() {
 
     })
 
+    //pending route
 
+    app.post('/pending', async(req,res)=>{
+        const userinfo = req.body;
+        const result = await pending.insertOne(userinfo);
+        res.send(result);
+    })
+    app.get('/getpending', async(req,res)=>{
+        const result = await pending.find().toArray();
+        res.send(result) 
+    })
 
 
 
