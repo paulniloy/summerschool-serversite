@@ -21,6 +21,21 @@ console.log(process.env.token);
 
 
 
+    const verifyjwt=(req,res,next)=>{
+        const authtoken = req.headers.authorization;
+        if(!authorization){
+            return res.status.send({error: true, message : "unauthorized"});
+        }
+        const token = authtoken.split(' ')[1];
+        jwt.verify(token, process.env.token, (err, decoded)=>{
+            if(err){
+                return res.status(401).send({error: true, message : 'token expired'});
+            }
+            req.decoded = decoded;
+            next();
+        })
+    }
+
 
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const uri = `mongodb+srv://${process.env.user_name}:${process.env.password}@paulniloy.38wqfao.mongodb.net/?retryWrites=true&w=majority`;
@@ -157,6 +172,15 @@ async function run() {
         const id = req.params.id;
         const query = {_id : new ObjectId(id)}
         const result = await pending.deleteOne(query);
+        res.send(result)
+    })
+
+    // showind classes to route
+
+    app.get("/userclasses", async(req,res)=>{
+        const email = req.query.email;
+        const query = { instructor_email : email, status : 'approved'};
+        const result = await classes.find(query).toArray();
         res.send(result)
     })
 
