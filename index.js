@@ -58,7 +58,6 @@ async function run() {
     const classes = db.collection("popularclasses");
     const instructors = db.collection("popularinstructors");
     const instructorsdata = db.collection("instructors");
-    const pending = db.collection("pending");
 
 
 
@@ -145,41 +144,48 @@ async function run() {
 
     app.post('/pending', async(req,res)=>{
         const userinfo = req.body;
-        const result = await pending.insertOne(userinfo);
+        const result = await classes.insertOne(userinfo);
         res.send(result);
     })
     app.get('/getpending', async(req,res)=>{
-        const result = await pending.find().toArray();
+        const query = {status : 'pending'}
+        const result = await classes.find(query).toArray();
         res.send(result) 
     })
     app.delete('/deletepending/:id', async(req,res)=>{
         const userid = req.params.id;
         const query = {_id : new ObjectId(userid)}
-        const result = await pending.deleteOne(query);
+        const result = await classes.deleteOne(query);
         res.send(result)
     })
 
     // add pending to database
 
-    app.post('/addtoclasses', async(req,res)=>{
-        const user = req.body;
-        const result = await classes.insertOne(user);
-        res.send(result)
-
-    })
-
-    app.delete('/pendingdelete/:id', async(req, res)=>{
+    app.patch('/addtoclasses/:id', async(req,res)=>{
         const id = req.params.id;
-        const query = {_id : new ObjectId(id)}
-        const result = await pending.deleteOne(query);
+        const filter = { _id : new ObjectId(id)}
+        const updateDoc = {
+            $set: {
+              status: "approved"
+            },
+          };
+        const result = await classes.updateOne(filter, updateDoc);
         res.send(result)
+
     })
+
+    // app.delete('/pendingdelete/:id', async(req, res)=>{
+    //     const id = req.params.id;
+    //     const query = {_id : new ObjectId(id)}
+    //     const result = await classes.deleteOne(query);
+    //     res.send(result)
+    // })
 
     // showind classes to route
 
     app.get("/userclasses", async(req,res)=>{
         const email = req.query.email;
-        const query = { instructor_email : email, status : 'approved'};
+        const query = { instructor_email : email};
         const result = await classes.find(query).toArray();
         res.send(result)
     })
