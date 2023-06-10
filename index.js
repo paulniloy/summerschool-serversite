@@ -58,6 +58,7 @@ async function run() {
     const classes = db.collection("popularclasses");
     const instructors = db.collection("popularinstructors");
     const instructorsdata = db.collection("instructors");
+    const pending = db.collection("pending");
 
 
 
@@ -190,7 +191,46 @@ async function run() {
         res.send(result)
     })
 
+    // update data 
 
+    app.patch("/update/:id", async(req,res)=>{
+        const id = req.params.id;
+        console.log(id);
+        const data = req.body;
+        console.log(data);
+        const query = {_id : new ObjectId(id)};
+        const updateDoc = {
+            $set: {
+              music_name : data.music_name,
+              image : data.image,
+              price : data.price,
+              available_seats : data.available_seats
+            },
+          };
+          const result = await classes.updateOne(query, updateDoc);
+          res.send(result)
+    })
+
+    app.get('/getitem/:id', async(req,res)=>{
+        const id = req.params.id;
+        const query = {_id : new ObjectId(id)};
+        const result = await classes.findOne(query);
+        res.send(result)
+    })
+
+
+    // showall classes
+
+    app.get("/allclasses", async(req,res)=>{
+        const query = { "available_seats" : {$gt : "0"}}
+        const result = await classes.find(query).toArray();
+        res.send(result)
+    })
+
+    // pending route
+    // app.post('/postpending'), async(req,res)=>{
+        
+    // }
 
 
 
