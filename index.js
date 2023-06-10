@@ -23,8 +23,8 @@ console.log(process.env.token);
 
     const verifyjwt=(req,res,next)=>{
         const authtoken = req.headers.authorization;
-        if(!authorization){
-            return res.status.send({error: true, message : "unauthorized"});
+        if(!authtoken){
+            return res.send({error: true, message : "unauthorized"});
         }
         const token = authtoken.split(' ')[1];
         jwt.verify(token, process.env.token, (err, decoded)=>{
@@ -153,10 +153,18 @@ async function run() {
         const result = await classes.find(query).toArray();
         res.send(result) 
     })
-    app.delete('/deletepending/:id', async(req,res)=>{
+    app.patch('/feedbacksend/:id', async(req,res)=>{
         const userid = req.params.id;
-        const query = {_id : new ObjectId(userid)}
-        const result = await classes.deleteOne(query);
+        const body = req.body;
+        console.log(body);
+        const query = {_id : new ObjectId(userid)};
+        const updateDoc = {
+            $set: {
+              feedback: body.denieddata,
+              status : body.status
+            },
+          };
+        const result = await classes.updateOne(query,updateDoc);
         res.send(result)
     })
 
@@ -184,8 +192,12 @@ async function run() {
 
     // showind classes to route
 
-    app.get("/userclasses", async(req,res)=>{
+    app.get("/userclasses", verifyjwt, async(req,res)=>{
         const email = req.query.email;
+        const decodedemail = req.decoded.email;
+        if(email !== decodedemail){
+            return res.send({message : "unauthorised"})
+        }
         const query = { instructor_email : email};
         const result = await classes.find(query).toArray();
         res.send(result)
@@ -222,15 +234,71 @@ async function run() {
     // showall classes
 
     app.get("/allclasses", async(req,res)=>{
-        const query = { "available_seats" : {$gt : "0"}}
+        const query = { "available_seats" : {$gt : "0"}, status : "approved"}
         const result = await classes.find(query).toArray();
         res.send(result)
     })
 
     // pending route
-    // app.post('/postpending'), async(req,res)=>{
-        
-    // }
+
+    app.patch('/setpending/:id',async(req,res)=>{
+        const id = req.params.id;
+        const query = {_id : new ObjectId(id)};
+        const updateDoc = {
+            $set: {
+              enrolled: "pending"
+            },
+          };
+        const result = await classes.updateOne(query, updateDoc);
+        res.send(result);
+    })
+
+    app.get('/getenrolled',async(req,res)=>{
+        const query = {enrolled : "approved"}
+        const result = await classes.find(query).toArray();
+        res.send(result);
+    })
+    app.get('/payment',async(req,res)=>{
+        const query = {enrolled : "pending"}
+        const result = await classes.find(query).toArray();
+        res.send(result);
+    })
+    app.patch('/backnormal/:id',async(req,res)=>{
+        const id = req.params.id;
+        const query = {_id : new ObjectId(id)};
+        const updateDoc = {
+            $set: {
+              enrolled: ""
+            },
+          };
+        const result = await classes.updateOne(query, updateDoc);
+        res.send(result);
+    })
+    // is admin check
+
+    app.get('/user/admin/:email', async(req,res)=>{
+        const email = req.params.email;
+        const query = { email : email};
+        const user = await instructorsdata.findOne(query);
+        const result = { role : user?.role === "admin"};
+        res.send(result);
+    })
+
+    // is instructor check
+    app.get('/user/instructor/:email', async(req,res)=>{
+        const email = req.params.email;
+        const query = { email : email};
+        const user = await instructorsdata.findOne(query);
+        const result = { roleB : user?.roleB === "instructor"};
+        res.send(result);
+    })
+    app.get('/user/instructor/:email', async(req,res)=>{
+        const email = req.params.email;
+        const query = { email : email};
+        const user = await instructorsdata.findOne(query);
+        const result = { role : user?.role === "student"};
+        res.send(result);
+    })
 
 
 
