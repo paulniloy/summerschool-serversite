@@ -4,6 +4,7 @@ const app = express()
 const port = 3000
 var cors = require('cors')
 var jwt = require('jsonwebtoken');
+const stripe = require("stripe")(process.env.payment);
 
 // 2j7FKakybpweZpVG
 // niloypaul
@@ -15,6 +16,7 @@ app.use(express.json());
 // TkWpj7Bshw0sdd7k
 // niloypaul
 console.log(process.env.password);
+console.log(process.env.payment);
 console.log(process.env.user_name);
 console.log(process.env.token);
 
@@ -38,6 +40,7 @@ console.log(process.env.token);
 
 
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
+const { default: Stripe } = require('stripe')
 const uri = `mongodb+srv://${process.env.user_name}:${process.env.password}@paulniloy.38wqfao.mongodb.net/?retryWrites=true&w=majority`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
@@ -96,7 +99,7 @@ async function run() {
         const filter = { _id: new ObjectId(id) };
         const updateDoc = {
             $set: {
-              roleB: "instructor"
+              role: "instructor"
             },
           };
         const result = instructorsdata.updateOne(filter, updateDoc);
@@ -275,7 +278,6 @@ async function run() {
         res.send(result);
     })
     // is admin check
-
     app.get('/user/admin/:email', async(req,res)=>{
         const email = req.params.email;
         const query = { email : email};
@@ -289,15 +291,33 @@ async function run() {
         const email = req.params.email;
         const query = { email : email};
         const user = await instructorsdata.findOne(query);
-        const result = { roleB : user?.roleB === "instructor"};
+        const result = { role : user?.role === "instructor"};
         res.send(result);
     })
-    app.get('/user/instructor/:email', async(req,res)=>{
+    // //student check
+    app.get('/user/student/:email', async(req,res)=>{
         const email = req.params.email;
         const query = { email : email};
         const user = await instructorsdata.findOne(query);
         const result = { role : user?.role === "student"};
         res.send(result);
+    })
+
+    //payment method
+
+    app.post ('/create/payment/intent', verifyjwt, async(req,res)=>{
+        const {price} = req.body;
+        const amount = parseInt(price) * 100;
+        const paymentIntent = await stripe.paymentIntents.create({
+            amount : amount,
+            currency : 'usd',
+            payment_method_types : ['card']
+        });
+        res.send({
+            clientSecret : paymentIntent.client_secret
+        })
+
+
     })
 
 
