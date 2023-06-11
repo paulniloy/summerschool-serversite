@@ -62,6 +62,7 @@ async function run() {
     const instructors = db.collection("popularinstructors");
     const instructorsdata = db.collection("instructors");
     const paiddata = db.collection("paidusers");
+    const pending = db.collection("pending");
 
 
 
@@ -337,11 +338,25 @@ async function run() {
         const query = { enrolledby : email};
         const updateDoc = {
             $set: {
-              enrolled: "",
-              enrolledby : ""
+              enrolled: ""
             },
           };
         const result = await classes.updateMany(query, updateDoc);
+        res.send(result);
+    })
+
+
+    // class details new
+
+    app.post('/settedpending/:id', async(req,res)=>{
+        const data = req.body;
+        const result = await classes.insertOne(data);
+        res.send(result);
+    })
+    app.get('/pendingdata', async(req,res)=>{
+        const email = req.body;
+        const query = {enrolledby : email}
+        const result = await classes.find(query).toArray();
         res.send(result);
     })
 
