@@ -269,17 +269,17 @@ async function run() {
         const result = await classes.find(query).toArray();
         res.send(result);
     })
-    app.patch('/backnormal/:id',async(req,res)=>{
-        const id = req.params.id;
-        const query = {_id : new ObjectId(id)};
-        const updateDoc = {
-            $set: {
-              enrolled: ""
-            },
-          };
-        const result = await classes.updateOne(query, updateDoc);
-        res.send(result);
-    })
+    // app.patch('/backnormal/:id',async(req,res)=>{
+    //     const id = req.params.id;
+    //     const query = {_id : new ObjectId(id)};
+    //     const updateDoc = {
+    //         $set: {
+    //           enrolled: ""
+    //         },
+    //       };
+    //     const result = await classes.updateOne(query, updateDoc);
+    //     res.send(result);
+    // })
     // is admin check
     app.get('/user/admin/:email', async(req,res)=>{
         const email = req.params.email;
@@ -354,9 +354,15 @@ async function run() {
         res.send(result);
     })
     app.get('/pendingdata', async(req,res)=>{
-        const email = req.body;
+        const email = req.query.email;
         const query = {enrolledby : email}
         const result = await classes.find(query).toArray();
+        res.send(result);
+    })
+    app.delete('/backnormal/:id',async(req,res)=>{
+        const id = req.params.id;
+        const query = {_id : new ObjectId(id)};
+        const result = await classes.deleteOne(query);
         res.send(result);
     })
 
