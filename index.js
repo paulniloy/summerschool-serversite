@@ -348,7 +348,7 @@ async function run() {
 
     // class details new
 
-    app.post('/settedpending/:id', async(req,res)=>{
+    app.post('/settedpending', async(req,res)=>{
         const data = req.body;
         const result = await classes.insertOne(data);
         res.send(result);
