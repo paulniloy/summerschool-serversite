@@ -61,7 +61,7 @@ async function run() {
     const classes = db.collection("popularclasses");
     const instructors = db.collection("popularinstructors");
     const instructorsdata = db.collection("instructors");
-    const pending = db.collection("pending");
+    const paiddata = db.collection("paidusers");
 
 
 
@@ -246,10 +246,12 @@ async function run() {
 
     app.patch('/setpending/:id',async(req,res)=>{
         const id = req.params.id;
+        const body = req.body;
         const query = {_id : new ObjectId(id)};
         const updateDoc = {
             $set: {
-              enrolled: "pending"
+              enrolled: "pending",
+              enrolledby : body.username
             },
           };
         const result = await classes.updateOne(query, updateDoc);
@@ -257,8 +259,8 @@ async function run() {
     })
 
     app.get('/getenrolled',async(req,res)=>{
-        const query = {enrolled : "approved"}
-        const result = await classes.find(query).toArray();
+        const query = {enrolled : "successful"}
+        const result = await paiddata.find(query).toArray();
         res.send(result);
     })
     app.get('/payment',async(req,res)=>{
@@ -318,6 +320,30 @@ async function run() {
         })
     })
 
+    //paid classes 
+    app.post("/paidclasses", async(req,res)=>{
+        const data = req.body;
+        const result = await paiddata.insertOne(data);
+        res.send(result);
+    })
+    app.get('/getpaidclasses', async(req,res)=>{
+        const email = req.query.email;
+        const query = {email : email};
+        const result = await paiddata.find(query).toArray();
+        res.send(result);
+    })
+    app.patch('/removepending',async(req,res)=>{
+        const email = req.body;
+        const query = { enrolledby : email};
+        const updateDoc = {
+            $set: {
+              enrolled: "",
+              enrolledby : ""
+            },
+          };
+        const result = await classes.updateMany(query, updateDoc);
+        res.send(result);
+    })
 
 
 
