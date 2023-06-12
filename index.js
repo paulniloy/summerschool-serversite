@@ -187,12 +187,6 @@ async function run() {
 
     })
 
-    // app.delete('/pendingdelete/:id', async(req, res)=>{
-    //     const id = req.params.id;
-    //     const query = {_id : new ObjectId(id)}
-    //     const result = await classes.deleteOne(query);
-    //     res.send(result)
-    // })
 
     // showind classes to route
 
@@ -265,21 +259,12 @@ async function run() {
         res.send(result);
     })
     app.get('/payment',async(req,res)=>{
-        const query = {enrolled : "pending"}
+        const email = req.query.email;
+        const query = {enrolledby : email}
         const result = await classes.find(query).toArray();
         res.send(result);
     })
-    // app.patch('/backnormal/:id',async(req,res)=>{
-    //     const id = req.params.id;
-    //     const query = {_id : new ObjectId(id)};
-    //     const updateDoc = {
-    //         $set: {
-    //           enrolled: ""
-    //         },
-    //       };
-    //     const result = await classes.updateOne(query, updateDoc);
-    //     res.send(result);
-    // })
+
     // is admin check
     app.get('/user/admin/:email', async(req,res)=>{
         const email = req.params.email;
@@ -350,6 +335,11 @@ async function run() {
 
     app.post('/settedpending', async(req,res)=>{
         const data = req.body;
+        const query = {item : data.item}
+        const existing = await classes.findOne(query);
+        if(existing){
+            return res.send({message : "already existed user"})
+        }
         const result = await classes.insertOne(data);
         res.send(result);
     })
@@ -364,6 +354,15 @@ async function run() {
         const query = {_id : new ObjectId(id)};
         const result = await classes.deleteOne(query);
         res.send(result);
+    })
+
+    // delete after payment
+
+    app.delete('/deletecartdata', async(req,res)=>{
+        const email = req.query.email;
+        const query = {enrolledby : email};
+        const result = await classes.deleteMany(query);
+        res.send(result)
     })
 
 
